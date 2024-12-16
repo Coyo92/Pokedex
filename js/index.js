@@ -3,47 +3,41 @@ const dataPokemon = 'https://pokeapi.co/api/v2/pokemon/';
 
 const listaPokemon = document.querySelector("#listaPokemon");
 
-function getPokemons() {
-    return fetch(apiPokemon);
+//Funcion async/await fetch.
+async function getPokedex() {
+    const response = await fetch(apiPokemon);
+    const pokedex = await response.json();
+    return pokedex;
 }
 
-function getPokemon(pokemon) {
-    return fetch(dataPokemon + pokemon);
+async function getDataPokemon(namePokemon) {
+    const response = await fetch(dataPokemon + namePokemon);
+    const infoPokedex = await response.json();
+    return infoPokedex;
 }
 
-function getPokedex() {
-
-    let pokemon = getPokemons();
-    pokemon.then((response) => response.json())
-            .then((res2) => {
-                let pokedex = res2.results;
-                console.log(res2)
-                //
-                for (let i = 0; i <= pokedex.length - 1; i ++) {
-                    let name = res2.results[i].name;
-                    //
-                    let infoPokemon = getPokemon(name);
-                    infoPokemon.then((response) => response.json())
-                            .then((response2) => {
-                                //console.log(response2);
-                                let idPokemon = response2.id;
-                                let namePokemon = response2.name;
-                                let spritesPokemon = response2.sprites.other.dream_world.front_default;
-                                let statsPokemon = response2.stats;
-                                let typesPokemon = response2.types;
-                                //setPokedex ( idPokemon, namePokemon, spritesPokemon, statsPokemon, typesPokemon );
-                                setData( response2 );
-                                //console.log('id: ', i, 'pokemon: ', name, 'sprite: ', spritesPokemon);
-                            });
-                }
-            });
-
-    //console.log(pokemon);
+function infoPokemon() {
+    //Call Function getPokedex for get all pokemon.
+    getPokedex().then( allPokemon => { 
+        let listPokemon = allPokemon.results;
+        //Use map to go through the entire arrangement.
+        listPokemon.map(function(element, index, array) {
+            //Call Function getDataPokemon for get all info about one pokemon.
+            getDataPokemon(element.name).then( allPokemon => { 
+                //Call Function createCard to create all cards one to one.
+                createCard( allPokemon );
+            })
+        })//Finaliza el map
+        
+    })
 }
 
-getPokedex();
+infoPokemon();
 
-function setData (pokedex) {
+function createCard (pokedex) {
+    if (pokedex.types[0].type !== 0) {
+        console.log(pokedex.types[0].type);
+    }
     const postContainer = document.querySelector('.card-container1');
     const postElements = document.createElement('div');
     postElements.classList.add('card-container');
@@ -52,24 +46,11 @@ function setData (pokedex) {
         <img class="img" id="imgPokemon" src="${ pokedex.sprites.other.dream_world.front_default }" alt="${ pokedex.name }">
     </div>
     <div>
-        <p class="heading"> ${ pokedex.name } </p>
+        <p class="heading"> ${ pokedex.name }  </p>
+    </div>
+    <div class="btn-container">
+        <button class="btn-namePokemon"> ${ pokedex.types[0].type.name }  </button>
     </div>
     `;
     postContainer.appendChild(postElements);
-}
-
-
-function setData1(elementID, texto) {
-
-
-    
-    let elementIdHTML = document.querySelector(elementID);
-    elementIdHTML.innerHTML = texto;
-    return;
-}
-
-function setSprite(elementID, sprite) {
-    let imgPokemon = document.getElementById(elementID);
-    imgPokemon.src = sprite;
-    return;
 }
